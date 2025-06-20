@@ -13,30 +13,40 @@ func Make_interpreter(memory int) InterpreteBF {
 	return InterpreteBF{Cinta: make([]int, memory), Puntero: 0}
 }
 
-func (interprete *InterpreteBF) Derecha() {
+func (interprete *InterpreteBF) Derecha(offset int) {
 
-	if len(interprete.Cinta) <= interprete.Puntero+1 {
-		panic("Te has quedado sin memoria!")
+	if len(interprete.Cinta) < interprete.Puntero+offset {
+		panic("Memory overflow!")
 	}
 
-	interprete.Puntero++
+	interprete.Puntero += offset
 }
 
-func (interprete *InterpreteBF) Izquierda() {
+func (interprete *InterpreteBF) Izquierda(offset int) {
 
-	if 0 > interprete.Puntero+1 {
-		panic("No tienes memoria negativa!")
+	if 0 > interprete.Puntero-offset {
+		panic("Memory underflow!")
 	}
 
-	interprete.Puntero--
+	interprete.Puntero -= offset
 }
 
-func (interprete *InterpreteBF) Incrementar() {
-	interprete.Cinta[interprete.Puntero]++
+func (interprete *InterpreteBF) Incrementar(times int) {
+
+	if interprete.Puntero < 0 {
+		panic("Pointer underflow!")
+	}
+
+	interprete.Cinta[interprete.Puntero] += times
 }
 
-func (interprete *InterpreteBF) Decrementar() {
-	interprete.Cinta[interprete.Puntero]--
+func (interprete *InterpreteBF) Decrementar(times int) {
+
+	if interprete.Puntero < 0 {
+		panic("Pointer underflow!")
+	}
+
+	interprete.Cinta[interprete.Puntero] -= times
 }
 
 func (interprete *InterpreteBF) PrintCelda() {
@@ -51,63 +61,41 @@ func (interprete *InterpreteBF) esCero() bool {
 	return interprete.Cinta[interprete.Puntero] == 0
 }
 
-func (interprete *InterpreteBF) Ejecutar(codigo []byte, input []byte) {
+func (interprete *InterpreteBF) Ejecutar(instrucciones []Instruction, input []byte) {
 
 	input_idx := 0
 
-	for i := 0; i < len(codigo); i++ {
-		switch codigo[i] {
-		case '>':
-			interprete.Derecha()
-		case '<':
-			interprete.Izquierda()
-		case '+':
-			interprete.Incrementar()
-		case '-':
-			interprete.Decrementar()
-		case '.':
+	for i := 0; i < len(instrucciones); i++ {
+		switch instrucciones[i].Opcode {
+		case Right:
+			interprete.Derecha(instrucciones[i].Value)
+		case Left:
+			interprete.Izquierda(instrucciones[i].Value)
+		case Increment:
+			interprete.Incrementar(instrucciones[i].Value)
+		case Decrement:
+			interprete.Decrementar(instrucciones[i].Value)
+		case Show:
 			interprete.PrintCelda()
-		case ',':
+		case Put:
 			if input_idx < len(input) {
 				interprete.PonerCelda(int(input[input_idx]))
 				input_idx++
 			} else {
 				return
 			}
-		case '[':
+		case LoopInit:
 			// Si el valor de la celda es cero, saltamos al ']' correspondiente.
 			if interprete.esCero() {
-				balanceo := 1 // Empezamos en 1 para contar el '[' actual.
-				for balanceo > 0 {
-					i++
-					if i >= len(codigo) {
-						panic("Error de sintaxis: no se encontró el ']' correspondiente.")
-					}
-					if codigo[i] == '[' {
-						balanceo++ // Encontramos un bucle anidado.
-					} else if codigo[i] == ']' {
-						balanceo-- // Cerramos un bucle.
-					}
-				}
+				i = instrucciones[i].Value
 			}
-		case ']':
+		case LoopEnd:
 			// Si el valor de la celda NO es cero, volvemos al '[' correspondiente.
 			if !interprete.esCero() {
-				balanceo := 1 // Empezamos en 1 para contar el ']' actual.
-				for balanceo > 0 {
-					i--
-					if i < 0 {
-						panic("Error de sintaxis: no se encontró el '[' correspondiente.")
-					}
-					if codigo[i] == ']' {
-						balanceo++ // Encontramos un ']' de un bucle interior.
-					} else if codigo[i] == '[' {
-						balanceo-- // Encontramos el inicio del bucle.
-					}
-				}
+				i = instrucciones[i].Value
 			}
 		default:
-			// panic("Comando desconocido en el interprete!")
+			panic("Error : UNKNOWN OpCode! This is critical, something went very wrong")
 		}
 	}
 

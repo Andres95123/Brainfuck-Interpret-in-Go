@@ -38,9 +38,10 @@ func main() {
 		inputBytes = []byte{}
 	}
 
+	var instructions []interpret.Instruction = interpret.ParseCode(file)
+
 	// Creamos el interprete
 	var interprete interpret.InterpreteBF = interpret.Make_interpreter(memory)
-
-	interprete.Ejecutar(file, []byte(inputBytes))
+	interprete.Ejecutar(instructions, []byte(inputBytes))
 
 }
