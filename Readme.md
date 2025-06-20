@@ -12,17 +12,17 @@ This project is an interpreter for the Brainfuck language written in Go.
 To compile the interpreter, run the following command in the terminal:
 
 ```bash
-go build -o interpret main.go
+go build -o interpret.exe main.go
 ```
 
-This will generate an executable named `interpret`.
+This will generate an executable named `interpret` in Windows. If you are on a Unix-like system, it will be named `interpret` without the `.exe` extension.
 
 ## Usage
 
 Run the interpreter with the following command:
 
 ```bash
-./interpret <brainfuck_file_path> <total_cells>
+./interpret.exe <brainfuck_file_path> <total_cells>
 ```
 
 ### Parameters
@@ -35,13 +35,13 @@ Run the interpreter with the following command:
 If the Brainfuck program requires input, you can provide it via standard input (stdin). For example:
 
 ```bash
-echo "input_data" | ./interpret <brainfuck_file_path> <total_cells>
+echo "input_data" | ./interpret.exe <brainfuck_file_path> <total_cells>
 ```
 
 ### Example
 
 ```bash
-./interpret example.bf 30000
+./interpret.exe example.bf 30000
 ```
 
 ## Common Errors
